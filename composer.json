@@ -1,0 +1,16 @@
+{
+    "name": "catalyst/swoole-foundation",
+    "description": "Catalyst Swoole Foundation",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Matthias Kaschubowski",
+            "email": "nihylum@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0",
+        "ext-swoole": "*"
+    }
+}
