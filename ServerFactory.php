@@ -105,6 +105,10 @@ class ServerFactory implements ServerFactoryInterface, ServantAwareInterface
 
         $server->set($settings->getSettings());
 
+        foreach ( $events->streamEvents() as $name => $callback ) {
+            $server->on($name, $callback);
+        }
+
         return $server;
     }
 
