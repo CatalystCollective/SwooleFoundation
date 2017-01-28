@@ -13,6 +13,11 @@ namespace Catalyst\Swoole\Servants;
 
 use Catalyst\Servant\RepositoryServant;
 
+/**
+ * Class FactoryServant
+ *
+ * @package Catalyst\Swoole\Servants
+ */
 class FactoryServant extends RepositoryServant
 {
     /**

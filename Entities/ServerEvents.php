@@ -14,11 +14,11 @@ namespace Catalyst\Swoole\Entities;
 use Catalyst\Swoole\EventsEntityInterface;
 
 /**
- * Class HttpServerEvents
+ * Class ServerEvents
  *
  * @package Catalyst\Swoole\Entities
  */
-class HttpServerEvents implements EventsEntityInterface
+class ServerEvents implements EventsEntityInterface
 {
     /**
      * @var array
@@ -28,6 +28,8 @@ class HttpServerEvents implements EventsEntityInterface
      * @var array
      */
     private static $eventNames = [
+        'onConnect',
+        'onReceive',
         'onStart',
         'onShutdown',
         'onWorkerStart',
@@ -37,20 +39,29 @@ class HttpServerEvents implements EventsEntityInterface
         'onTask',
         'onFinish',
         'onPipeMessage',
-        'onRequest',
         'onWorkerError',
         'onManagerStart',
         'onManagerStop',
     ];
 
     /**
-     * enqueues a callback to the onRequest Event
+     * enqueues a callback to the onConnect Event
      *
      * @param callable $callback
      */
-    public function onRequest(callable $callback)
+    public function onConnect(callable $callback)
     {
-        $this->events['request'][] = $callback;
+        $this->events['connect'][] = $callback;
+    }
+
+    /**
+     * enqueues a callback to the onReceive Event
+     *
+     * @param callable $callback
+     */
+    public function onReceive(callable $callback)
+    {
+        $this->events['receive'][] = $callback;
     }
 
     /**

@@ -11,18 +11,41 @@
 namespace Catalyst\Swoole;
 
 
+/**
+ * Interface ServerFactoryInterface
+ *
+ * @package Catalyst\Swoole
+ */
 interface ServerFactoryInterface
 {
-    const HOST = 'host';
-    const PORT = 'port';
-    const MODE = 'mode';
-    const SOCK_TYPE = 'sock_type';
-
+    /**
+     * swoole constant import
+     */
     const SOCK_TCP = \SWOOLE_SOCK_TCP;
+
+    /**
+     * swoole constant import
+     */
     const SOCK_TCP6 = \SWOOLE_SOCK_TCP6;
+
+    /**
+     * swoole constant import
+     */
     const SOCK_UDP = \SWOOLE_SOCK_UDP;
+
+    /**
+     * swoole constant import
+     */
     const SOCK_UDP6 = \SWOOLE_SOCK_UDP6;
+
+    /**
+     * swoole constant import
+     */
     const SOCK_UNIX_DGRAM = \SWOOLE_SOCK_UNIX_DGRAM;
+
+    /**
+     * swoole constant import
+     */
     const SOCK_UNIX_STREAM = \SWOOLE_SOCK_UNIX_STREAM;
 
     /**

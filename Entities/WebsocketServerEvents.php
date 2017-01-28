@@ -14,11 +14,11 @@ namespace Catalyst\Swoole\Entities;
 use Catalyst\Swoole\EventsEntityInterface;
 
 /**
- * Class HttpServerEvents
+ * Class WebsocketServerEvents
  *
  * @package Catalyst\Swoole\Entities
  */
-class HttpServerEvents implements EventsEntityInterface
+class WebsocketServerEvents implements EventsEntityInterface
 {
     /**
      * @var array

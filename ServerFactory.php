@@ -16,12 +16,25 @@ use Catalyst\Servant\ServantAwareInterface;
 use Catalyst\Servant\ServantInterface;
 use Catalyst\Swoole\Entities\HttpServerEvents;
 use Catalyst\Swoole\Entities\ServerConfiguration;
+use Catalyst\Swoole\Entities\ServerEvents;
+use Catalyst\Swoole\Entities\WebsocketServerEvents;
 use Catalyst\Swoole\Servants\FactoryServant;
 
+/**
+ * Class ServerFactory
+ *
+ * @package Catalyst\Swoole
+ */
 class ServerFactory implements ServerFactoryInterface, ServantAwareInterface
 {
+    /**
+     * @var FactoryServant
+     */
     protected $servant;
 
+    /**
+     * ServerFactory constructor.
+     */
     public function __construct()
     {
         $this->servant = new FactoryServant();
@@ -72,28 +85,17 @@ class ServerFactory implements ServerFactoryInterface, ServantAwareInterface
      */
     public function httpServer(\Closure $closure): \swoole_http_server
     {
-        $parameter = $this->servant->reflect($closure)->getParameters();
         $events = new HttpServerEvents();
         $settings = new ServerConfiguration();
 
-        $inject = [];
-        foreach ( $parameter as $current ) {
-            if ( $current->getClass() && $current->getClass()->getName() === HttpServerEvents::class ) {
-                $inject[$current->getPosition()] = $events;
-                continue;
-            }
-
-            if ( $current->getClass() && $current->getClass()->getName() === ServerConfiguration::class ) {
-                $inject[$current->getPosition()] = $settings;
-                continue;
-            }
-
-            $inject[$current->getPosition()] = $this->servant->resolveFromReflection($current);
-        }
-
-        $closure(... $inject);
+        $closure(... $this->marshalDependencies($closure, $events, $settings));
 
         $bindings = $settings->getBindings();
+
+        if ( empty($bindings) ) {
+            throw new \LogicException('Server configurations must serve at least one binding');
+        }
+
         $majorBinding = array_shift($bindings);
 
         $server = new \swoole_http_server(
@@ -103,11 +105,11 @@ class ServerFactory implements ServerFactoryInterface, ServantAwareInterface
             $majorBinding['socket']
         );
 
-        $server->set($settings->getSettings());
-
-        foreach ( $events->streamEvents() as $name => $callback ) {
-            $server->on($name, $callback);
+        foreach ( $bindings as $current ) {
+            $server->addlistener($current['host'], $current['port'], $current['socket']);
         }
+
+        $this->injectEventsAndSettingsInto($server, $events, $settings);
 
         return $server;
     }
@@ -120,7 +122,33 @@ class ServerFactory implements ServerFactoryInterface, ServantAwareInterface
      */
     public function webSocketServer(\Closure $closure): \swoole_websocket_server
     {
-        // TODO: Implement webSocketServer() method.
+        $events = new WebsocketServerEvents();
+        $settings = new ServerConfiguration();
+
+        $closure(... $this->marshalDependencies($closure, $events, $settings));
+
+        $bindings = $settings->getBindings();
+
+        if ( empty($bindings) ) {
+            throw new \LogicException('Server configurations must serve at least one binding');
+        }
+
+        $majorBinding = array_shift($bindings);
+
+        $server = new \swoole_websocket_server(
+            $majorBinding['host'],
+            $majorBinding['port'],
+            $settings->getMode(),
+            $majorBinding['socket']
+        );
+
+        foreach ( $bindings as $current ) {
+            $server->addlistener($current['host'], $current['port'], $current['socket']);
+        }
+
+        $this->injectEventsAndSettingsInto($server, $events, $settings);
+
+        return $server;
     }
 
     /**
@@ -131,7 +159,76 @@ class ServerFactory implements ServerFactoryInterface, ServantAwareInterface
      */
     public function server(\Closure $closure): \swoole_server
     {
-        // TODO: Implement server() method.
+        $events = new ServerEvents();
+        $settings = new ServerConfiguration();
+
+        $closure(... $this->marshalDependencies($closure, $events, $settings));
+
+        $bindings = $settings->getBindings();
+
+        if ( empty($bindings) ) {
+            throw new \LogicException('Server configurations must serve at least one binding');
+        }
+
+        $majorBinding = array_shift($bindings);
+
+        $server = new \swoole_server(
+            $majorBinding['host'],
+            $majorBinding['port'],
+            $settings->getMode(),
+            $majorBinding['socket']
+        );
+
+        foreach ( $bindings as $current ) {
+            $server->addlistener($current['host'], $current['port'], $current['socket']);
+        }
+
+        $this->injectEventsAndSettingsInto($server, $events, $settings);
+
+        return $server;
     }
 
+    /**
+     * marshals the dependencies for a closure.
+     *
+     * @param \Closure $closure
+     * @param EventsEntityInterface $events
+     * @param ServerConfiguration $settings
+     * @return \Generator
+     */
+    protected function marshalDependencies(\Closure $closure, EventsEntityInterface $events, ServerConfiguration $settings)
+    {
+        $parameter = $this->servant->reflect($closure)->getParameters();
+
+        foreach ( $parameter as $current ) {
+            if ( $current->getClass() && $current->getClass()->getName() === get_class($events) ) {
+                yield $events;
+                continue;
+            }
+
+            if ( $current->getClass() && $current->getClass()->getName() === ServerConfiguration::class ) {
+                yield $settings;
+                continue;
+            }
+
+            yield $this->servant->resolveFromReflection($current);
+        }
+    }
+
+    /**
+     * injector for events and settings to a server instance.
+     *
+     * @param \swoole_server $server
+     * @param EventsEntityInterface $events
+     * @param ServerConfiguration $settings
+     * @return void
+     */
+    protected function injectEventsAndSettingsInto(\swoole_server $server, EventsEntityInterface $events, ServerConfiguration $settings)
+    {
+        $server->set($settings->getSettings());
+
+        foreach ( $events->streamEvents() as $name => $callback ) {
+            $server->on($name, $callback);
+        }
+    }
 }
