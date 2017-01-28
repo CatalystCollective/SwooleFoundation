@@ -11,6 +11,7 @@
     ],
     "require": {
         "php": ">=7.0",
-        "ext-swoole": "*"
+        "ext-swoole": "*",
+        "catalyst/servant": "~0.1"
     }
 }
