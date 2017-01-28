@@ -22,7 +22,7 @@ use Catalyst\Swoole\{
 
 $factory = new ServerFactory();
 
-$factory->server(function(ServerConfiguration $settings, ServerEvents $events) {
+$server = $factory->server(function(ServerConfiguration $settings, ServerEvents $events) {
     $settings->withBinding('::', 9508);
     
     $events->onStart(function() {
@@ -42,7 +42,7 @@ use Catalyst\Swoole\{
 
 $factory = new ServerFactory();
 
-$factory->httpServer(function(ServerConfiguration $settings, HttpServerEvents $events) {
+$server = $factory->httpServer(function(ServerConfiguration $settings, HttpServerEvents $events) {
     $settings->withBinding('::', 80);
     
     $events->onRequest(function(swoole_http_request $request, swoole_http_respose $response) {
@@ -62,7 +62,7 @@ use Catalyst\Swoole\{
 
 $factory = new ServerFactory();
 
-$factory->webSocketServer(function(ServerConfiguration $settings, HttpServerEvents $events) {
+$server = $factory->webSocketServer(function(ServerConfiguration $settings, HttpServerEvents $events) {
     $settings->withBinding('::', 80);
     
     $events->onRequest(function(swoole_http_request $request, swoole_http_respose $response) {
