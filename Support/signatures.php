@@ -413,13 +413,6 @@ class swoole_http_response
  */
 class swoole_http_server extends swoole_server
 {
-    /**
-     * Enable fill of the $GLOBALS variables with GET, POST, COOKIE data
-     *
-     * @param int $flag HTTP_GLOBAL_ALL, HTTP_GLOBAL_GET, HTTP_GLOBAL_POST, HTTP_GLOBAL_COOKIE
-     * @param int $request_flag
-     */
-    function setGlobal($flag, $request_flag = 0) {}
 }
 
 /**
@@ -1395,4 +1388,3 @@ class swoole_websocket_server extends swoole_http_server
      */
     public function push($fd, $data, $binary_data = false, $finish = true) {}
 }
-
